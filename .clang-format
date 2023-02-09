@@ -1,0 +1,13 @@
+---
+BasedOnStyle: Google
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
+  BeforeElse: true
+ColumnLimit: "0"
+AlignConsecutiveAssignments: true
+AllowShortLoopsOnASingleLine: true
+AllowShortBlocksOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+IndentPPDirectives: BeforeHash
+IncludeBlocks: Merge
