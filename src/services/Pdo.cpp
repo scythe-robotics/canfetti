@@ -276,6 +276,7 @@ canfetti::Error PdoService::sendTxPdo(uint16_t paramIdx, bool rtr)
       uint8_t maxPdoRemaining = 8 - (pdoData - msg.data);
       auto len                = proxies[i]->remaining();
       assert(len <= maxPdoRemaining);  // Catch programming errors.  PDOs can only have 8 bytes
+      (void)maxPdoRemaining;
       if (Error e = proxies[i]->copyInto(pdoData, len); e != Error::Success) {
         LogInfo("Failed to read OD at %x[%x] for TPDO 0x%03x: error 0x%08x", proxies[i]->idx, proxies[i]->subIdx, msg.id, e);
         return e;
