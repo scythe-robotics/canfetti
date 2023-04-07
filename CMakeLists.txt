@@ -33,7 +33,7 @@ add_library(canfetti SHARED
 target_include_directories(canfetti PUBLIC
   include
   include/platform/linux)
-target_compile_options(canfetti PRIVATE -g)
+target_compile_options(canfetti PRIVATE -g -Og -Wall -Werror)
 target_link_libraries(canfetti PUBLIC pthread)
 
 if(NOT catkin_FOUND)

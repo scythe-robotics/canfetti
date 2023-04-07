@@ -388,7 +388,7 @@ Error PdoService::processMsg(const canfetti::Msg &msg)
         continue;
       }
 
-      uint8_t numMappings;
+      uint8_t numMappings     = 0;
       uint16_t rpdoMappingIdx = rpdoParamIdx + mappingOffset;
 
       if (co.od.get(rpdoMappingIdx, 0, numMappings) != canfetti::Error::Success) {
