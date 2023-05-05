@@ -106,6 +106,7 @@ Error SdoService::clientTransaction(bool read, uint8_t remoteNode, uint16_t idx,
           .cb         = cb,
       };
       auto [i, success] = activeTransactions.emplace(serverToClient, state);
+      (void)i; // Silence unused variable warning
       if (!success) err = Error::Error;
     }
 
@@ -165,6 +166,7 @@ Error SdoService::processMsg(const Msg &msg)
   }
   else if (auto &&s = servers.find(msg.id); s != servers.end()) {
     auto [tx, node] = s->second;
+    (void)node; // Silence unused variable warning
     auto server     = Server::processInitiate(msg, tx, co);
 
     if (server) {
@@ -176,6 +178,7 @@ Error SdoService::processMsg(const Msg &msg)
           .cb         = nullptr,
       };
       auto [i, success] = activeTransactions.emplace(msg.id, state);
+      (void)i; // Silence unused variable warning
       if (!success) {
         return Error::Error;
       }

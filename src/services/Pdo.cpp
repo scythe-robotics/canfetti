@@ -150,6 +150,9 @@ void PdoService::rpdoTimeout(unsigned generation, uint16_t idx)
 {
   if (auto r = rpdoTimers.find(idx); r != rpdoTimers.end()) {
     auto &[timer, gen, periodMs, cb] = r->second;
+    (void)timer; // Silence unused variable warning
+    (void)periodMs;
+
     // Was the timer invalidated before the callback fired?
     if (generation != gen) return;
 
@@ -322,6 +325,8 @@ canfetti::Error PdoService::disablePdoEvents()
 
   for (auto r : rpdoTimers) {
     auto &[timer, gen, periodMs, cb] = r.second;
+    (void)periodMs; // Silence unused variable warning
+    (void)cb;
     gen                              = newGeneration();
     co.sys.deleteTimer(timer);
   }
@@ -448,6 +453,7 @@ Error PdoService::processMsg(const canfetti::Msg &msg)
       // Reset timer if active
       if (auto r = rpdoTimers.find(busCobid); r != rpdoTimers.end()) {
         auto &[timer, gen, periodMs, cb] = r->second;
+        (void)cb; // Silence unused variable warning
         gen                              = newGeneration();
         if (timer != System::InvalidTimer) {
           co.sys.deleteTimer(timer);

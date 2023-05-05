@@ -54,6 +54,7 @@ canfetti::Error EmcyService::clearEmcy(uint16_t error, ErrorType type)
 {
   if (auto i = errorHistory.find(error); i != errorHistory.end()) {
     auto &[err, cnt] = *i;
+    (void)err; // Silence unused variable warning
 
     if (--cnt == 0) {
       errorHistory.erase(i);
