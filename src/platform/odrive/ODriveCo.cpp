@@ -110,33 +110,7 @@ void ODriveCo::init(fibre::Callback<std::optional<uint32_t>, float, fibre::Callb
   LocalNode::init();
   sys.init(timer, timerCancel);
   initObjDict();
-
-  // Using range filters instead of bit mask
-  MsgIdFilterSpecs filter1 = {
-      .id   = static_cast<uint16_t>(0x000),  // Standard ID
-      .mask = 0x199,                         // Accept all IDs from 0-199 (high prio msgs)
-  };
-
-  canbus->subscribe(0,
-                    filter1,
-                    MEMBER_CB(this, handle_can_message),
-                    &canbusSubscription[0]);
-
-  MsgIdFilterSpecs filter2 = {
-      .id   = static_cast<uint16_t>(0x19E),
-      .mask = 0x7FF,  // Accept 19E - 7FF
-  };
-
-  canbus->subscribe(1,
-                    filter2,
-                    MEMBER_CB(this, handle_can_message),
-                    &canbusSubscription[1]);
-}
-
-bool ODriveCo::apply_config()
-{
-  nodeId = config_.id;
-  return true;
+  configHwFilters();
 }
 
 Error ODriveCo::write(const Msg &msg)
