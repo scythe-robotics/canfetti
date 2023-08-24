@@ -28,7 +28,9 @@ class CanDevice {
     return prio ? writePriority(msg) : write(msg);
   }
 
-  virtual Error write(const Msg &msg) = 0;
+  // If async is true and platform supports it: return success and actual write
+  // happens later; caller cannot tell whether actual write succeeds
+  virtual Error write(const Msg &msg, bool async = false) = 0;
   virtual Error writePriority(const Msg &msg) { return write(msg); }
 
   Stats stats;

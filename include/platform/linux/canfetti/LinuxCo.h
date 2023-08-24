@@ -17,11 +17,14 @@ class LinuxCoDev : public canfetti::CanDevice {
  public:
   LinuxCoDev(uint32_t baudrate);
   canfetti::Error open(const char* device);
-  canfetti::Error write(const canfetti::Msg& msg);
+  canfetti::Error write(const canfetti::Msg& msg, bool async = false) override;
   canfetti::Error read(struct can_frame& frame, bool nonblock);
+  void flushAsyncFrames();
 
  private:
   int s;
+  // Accessed by write() and flushAsyncFrames()
+  std::vector<struct can_frame> asyncFrames;
 };
 
 class LinuxCo : public canfetti::LocalNode {

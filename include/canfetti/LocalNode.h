@@ -22,7 +22,7 @@ class LocalNode : public Node {
   inline Error addSDOClient(uint32_t txCobid, uint16_t rxCobid, uint8_t serverId) { return sdo.addSDOClient(txCobid, rxCobid, serverId); }
   inline Error addSDOServer(uint8_t sdoId, uint8_t remoteNode) { return sdo.addSDOServer(0x600 + sdoId, 0x580 + sdoId, remoteNode); }
   inline Error addSDOClient(uint8_t sdoId, uint8_t remoteNode) { return sdo.addSDOClient(0x600 + sdoId, 0x580 + sdoId, remoteNode); }
-  inline Error triggerTPDO(uint16_t pdoNum) { return pdo.sendTxPdo(0x1800 + pdoNum); }
+  inline Error triggerTPDO(uint16_t pdoNum, bool async = false) { return pdo.sendTxPdo(0x1800 + pdoNum, async); }
   inline Error triggerAllTPDOs() { return pdo.sendAllTpdos(); }
   inline Error updateTpdoEventTime(uint16_t pdoNum, uint16_t periodMs) { return pdo.updateTpdoEventTime(0x1800 + pdoNum, periodMs); }
   inline Error disableTPDO(uint16_t pdoNum) { return pdo.disablePdo(0x1800 + pdoNum); }

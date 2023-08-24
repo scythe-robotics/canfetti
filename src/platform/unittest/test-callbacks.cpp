@@ -22,13 +22,13 @@ namespace {
 
   class MockCanDevice : public CanDevice {
   public:
-    MOCK_METHOD(Error, write, (const Msg &msg), (override));
+    MOCK_METHOD(Error, write, (const Msg &msg, bool /* async */), (override));
   };
 
   class MockLocalNode : public LocalNode {
   public:
     MockLocalNode() : LocalNode(dev, sys, 1, "Test Device", 0) {}
-    Error sendResponse(const Msg &m)
+    Error sendResponse(const Msg &m, bool /* async */)
     {
       processFrame(m);
       return Error::Success;
@@ -48,7 +48,7 @@ TEST(LinuxCoTest, emcyCallback)
 
   co.registerEmcyCallback(mcb.AsStdFunction());
 
-  EXPECT_CALL(co.dev, write(FieldsAre(0x081, false, 8, _))).WillOnce(Invoke(&co, &MockLocalNode::sendResponse));
+  EXPECT_CALL(co.dev, write(FieldsAre(0x081, false, 8, _), _)).WillOnce(Invoke(&co, &MockLocalNode::sendResponse));
 
   co.sendEmcy(0x1234);
 }
