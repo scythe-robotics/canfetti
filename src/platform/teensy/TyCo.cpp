@@ -110,7 +110,7 @@ canfetti::Error TyCoDev::init(uint32_t baudrate, FlexCAN_T4 *busInstance)
   return canfetti::Error::Success;
 }
 
-canfetti::Error TyCoDev::write(const Msg &msg)
+canfetti::Error TyCoDev::write(const Msg &msg, bool /* async */)
 {
   CAN_message_t m;
   assert(msg.len <= sizeof(m.buf));

@@ -13,7 +13,7 @@ class PdoService : public Service {
   Error processMsg(const Msg &msg);
   Error enablePdoEvents();
   Error disablePdoEvents();
-  Error sendTxPdo(uint16_t paramIdx, bool rtr = false);
+  Error sendTxPdo(uint16_t paramIdx, bool async = false, bool rtr = false);
   Error disablePdo(uint16_t paramIdx);
   Error enablePdo(uint16_t paramIdx);
   Error requestTxPdo(uint16_t cobid);

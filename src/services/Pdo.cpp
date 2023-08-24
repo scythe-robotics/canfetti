@@ -95,7 +95,8 @@ void PdoService::enableTpdoEvent(uint16_t tpdoIdx)
       // sync PDOs not currently supported
       if (isEventDriven(co.od, tpdoIdx) && !isDisabled(cobid) && period) {
         uint16_t busCobid = canIdMask(cobid);
-        auto hdl          = co.sys.schedulePeriodic(period, std::bind(&PdoService::sendTxPdo, this, tpdoIdx, false));
+        // Async because nothing can observe the return value
+        auto hdl          = co.sys.schedulePeriodic(period, std::bind(&PdoService::sendTxPdo, this, tpdoIdx, /* async */ true, /* rtr */ false));
         auto t            = tpdoTimers.find(busCobid);
 
         // Update existing timer
@@ -227,7 +228,7 @@ Error PdoService::enablePdo(uint16_t paramIdx)
   return co.od.set(paramIdx, 1, cobid);
 }
 
-canfetti::Error PdoService::sendTxPdo(uint16_t paramIdx, bool rtr)
+canfetti::Error PdoService::sendTxPdo(uint16_t paramIdx, bool async, bool rtr)
 {
   constexpr uint16_t mappingOffset = 0x200;
   uint16_t mappingIdx              = paramIdx + mappingOffset;
@@ -289,7 +290,7 @@ canfetti::Error PdoService::sendTxPdo(uint16_t paramIdx, bool rtr)
     }
   }
 
-  return co.bus.write(msg);
+  return co.bus.write(msg, async);
 }
 
 canfetti::Error PdoService::enablePdoEvents()
@@ -378,7 +379,7 @@ Error PdoService::processMsg(const canfetti::Msg &msg)
         break;
       }
 
-      return sendTxPdo(tpdoParamIdx, true);
+      return sendTxPdo(tpdoParamIdx, /* async */ false, /* rtr */ true);
     }
   }
   else {

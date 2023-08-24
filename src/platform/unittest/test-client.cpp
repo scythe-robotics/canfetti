@@ -27,7 +27,7 @@ namespace {
 
   class MockCanDevice : public CanDevice {
   public:
-    MOCK_METHOD(Error, write, (const Msg &msg), (override));
+    MOCK_METHOD(Error, write, (const Msg &msg, bool /* async */), (override));
   };
 
   class MockLocalNode : public LocalNode {
@@ -71,9 +71,9 @@ TEST(LinuxCoTest, readAsyncExpedited)
   EXPECT_EQ(co.addSDOClient(node, node), Error::Success);
 
   bool sentInit = false;
-  EXPECT_CALL(co.dev, write(FieldsAre(0x605, false, 8, _)))
+  EXPECT_CALL(co.dev, write(FieldsAre(0x605, false, 8, _), _))
       .WillOnce(
-          Invoke([&](const Msg& m) {
+          Invoke([&](const Msg& m, bool /* async */) {
             sentInit = true;
             return Error::Success;
           }));

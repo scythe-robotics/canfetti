@@ -113,7 +113,7 @@ void ODriveCo::init(fibre::Callback<std::optional<uint32_t>, float, fibre::Callb
   configHwFilters();
 }
 
-Error ODriveCo::write(const Msg &msg)
+Error ODriveCo::write(const Msg &msg, bool /* async */)
 {
   can_Message_t txmsg = {0};
 

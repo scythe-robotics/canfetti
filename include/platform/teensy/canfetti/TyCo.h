@@ -10,8 +10,8 @@ namespace canfetti {
 class TyCoDev : public canfetti::CanDevice {
  public:
   canfetti::Error init(uint32_t baudrate, FlexCAN_T4 *busInstance);
-  canfetti::Error write(const Msg &msg);
-  canfetti::Error writePriority(const Msg &msg);
+  canfetti::Error write(const Msg &msg, bool async = false) override;
+  canfetti::Error writePriority(const Msg &msg) override;
 
   inline bool read(CAN_message_t &m) { return bus->readMB(m); }
   inline size_t newDroppedRx() { return bus->readAndClearDroppedRx(); }

@@ -197,7 +197,7 @@ Error LinuxCoDev::read(struct can_frame &frame, bool nonblock)
   return r > 0 ? Error::Success : Error::Timeout;
 }
 
-Error LinuxCoDev::write(const Msg &msg)
+Error LinuxCoDev::write(const Msg &msg, bool async)
 {
   struct can_frame frame = {0};
   assert(msg.len <= sizeof(frame.data));
@@ -211,13 +211,27 @@ Error LinuxCoDev::write(const Msg &msg)
   else
     memcpy(frame.data, msg.data, msg.len);
 
-  if (ssize_t written = ::write(s, &frame, sizeof(frame)); written < 0) {
+  if (async) {
+    asyncFrames.push_back(frame);
+  }
+  else if (ssize_t written = ::write(s, &frame, sizeof(frame)); written < 0) {
     LogDebug("can socket write: errno %d", errno);
     stats.droppedTx++;
     return Error::HwError;
   }
 
   return Error::Success;
+}
+
+void LinuxCoDev::flushAsyncFrames()
+{
+  for (const struct can_frame& frame : asyncFrames) {
+    if (ssize_t written = ::write(s, &frame, sizeof(frame)); written < 0) {
+      LogDebug("can socket write (async): errno %d", errno);
+      stats.droppedTx++;
+    }
+  }
+  asyncFrames.clear();
 }
 
 //******************************************************************************
@@ -272,6 +286,8 @@ void LinuxCo::runMainThread()
       recvThreadWakeup.notify_one();
     }
     pendingFrames.clear();
+    u.unlock();
+    static_cast<LinuxCoDev &>(bus).flushAsyncFrames();
   }
 }
 
