@@ -7,6 +7,7 @@
 #include <mutex>
 #include <random>
 #include <thread>
+#include <unordered_set>
 #include "canfetti/LocalNode.h"
 #include "canfetti/System.h"
 #include "linux/can.h"
@@ -40,8 +41,9 @@ class LinuxCo : public canfetti::LocalNode {
   {
     std::lock_guard g(mtx);
     unsigned gen = sys.getTimerGeneration();
+    bool noPendingTpdos = pendingTpdos.empty();
     f();
-    if (gen != sys.getTimerGeneration()) {
+    if (gen != sys.getTimerGeneration() || (noPendingTpdos && !pendingTpdos.empty())) {
       mainThreadWakeup.notify_one();
     }
   }
@@ -88,19 +90,27 @@ class LinuxCo : public canfetti::LocalNode {
     return result;
   }
 
+  // Request async TPDO send. Requests are coalesced so that only one send per
+  // TPDO happens per main loop iteration. This prevents an external caller
+  // running faster than the main loop from enqueueing unbounded sends.
+  Error triggerTPDOOnce(uint16_t pdoNum);
+
  private:
   // These are separate threads due to the difficulty of combining socket IO with timers
   void runMainThread();
   void runRecvThread();
 
   std::recursive_mutex mtx;
-  std::condition_variable_any mainThreadWakeup; // when pendingFrames becomes non-empty or timers have changed
-  std::condition_variable_any recvThreadWakeup; // when pendingFrames becomes empty
+  // when pendingFrames becomes non-empty / timers have changed / async TPDOs are requested
+  std::condition_variable_any mainThreadWakeup;
+  // when pendingFrames becomes empty
+  std::condition_variable_any recvThreadWakeup;
   System sys;
   std::vector<can_frame> pendingFrames;
   std::unique_ptr<std::thread> mainThread;
   std::unique_ptr<std::thread> recvThread;
   std::atomic<bool> shutdown{false};
+  std::unordered_set<uint16_t> pendingTpdos;
 };
 
 }  // namespace canfetti
