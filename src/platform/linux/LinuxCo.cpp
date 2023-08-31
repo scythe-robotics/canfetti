@@ -272,7 +272,9 @@ void LinuxCo::runMainThread()
     std::unique_lock u(mtx);
     unsigned gen = sys.getTimerGeneration();
     auto deadline = std::min(sys.nextTimerDeadline(), std::chrono::steady_clock::now() + std::chrono::milliseconds(500));
-    mainThreadWakeup.wait_until(u, deadline, [&]() {return !pendingFrames.empty() || gen != sys.getTimerGeneration();});
+    mainThreadWakeup.wait_until(u, deadline, [&]() {
+      return !pendingFrames.empty() || gen != sys.getTimerGeneration() || !pendingTpdos.empty();
+    });
     sys.serviceTimers();
     for (auto& frame : pendingFrames) {
       Msg msg;
@@ -286,6 +288,7 @@ void LinuxCo::runMainThread()
       recvThreadWakeup.notify_one();
     }
     pendingFrames.clear();
+    pendingTpdos.clear();
     u.unlock();
     static_cast<LinuxCoDev &>(bus).flushAsyncFrames();
   }
@@ -322,4 +325,12 @@ void LinuxCo::runRecvThread()
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
   }
+}
+
+Error LinuxCo::triggerTPDOOnce(uint16_t pdoNum)
+{
+  if (pendingTpdos.find(pdoNum) != pendingTpdos.end()) return Error::Success;
+  if (Error e = triggerTPDO(pdoNum, /* async */ true); e != Error::Success) return e;
+  pendingTpdos.insert(pdoNum);
+  return Error::Success;
 }
