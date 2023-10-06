@@ -151,7 +151,7 @@ void PdoService::rpdoTimeout(unsigned generation, uint16_t idx)
 {
   if (auto r = rpdoTimers.find(idx); r != rpdoTimers.end()) {
     auto &[timer, gen, periodMs, cb] = r->second;
-    (void)timer; // Silence unused variable warning
+    (void)timer;  // Silence unused variable warning
     (void)periodMs;
 
     // Was the timer invalidated before the callback fired?
@@ -189,7 +189,11 @@ Error PdoService::addTPDO(uint16_t pdoNum, uint16_t cobid, const std::tuple<uint
   uint16_t paramIdx = 0x1800 + pdoNum;
 
   auto err = addPdoEntry(paramIdx, cobid, periodMs, mapping, numMapping, enabled, true, std::bind(&PdoService::enableTpdoEvent, this, std::placeholders::_1));
-  if (err == Error::Success) enableTpdoEvent(paramIdx);
+  if (err == Error::Success) {
+    configuredTPDONums.push_back(pdoNum);
+    enableTpdoEvent(paramIdx);
+  }
+
   return err;
 }
 
@@ -301,7 +305,8 @@ canfetti::Error PdoService::enablePdoEvents()
   pdoEnabled = true;
 
   // TPDO timers
-  for (uint16_t paramIdx = 0x1800; co.od.get(paramIdx, 1, cfgCobid) == canfetti::Error::Success; paramIdx++) {
+  for (auto pdoNum : configuredTPDONums) {
+    uint16_t paramIdx = 0x1800 + pdoNum;
     enableTpdoEvent(paramIdx);
   }
 
@@ -326,9 +331,9 @@ canfetti::Error PdoService::disablePdoEvents()
 
   for (auto r : rpdoTimers) {
     auto &[timer, gen, periodMs, cb] = r.second;
-    (void)periodMs; // Silence unused variable warning
+    (void)periodMs;  // Silence unused variable warning
     (void)cb;
-    gen                              = newGeneration();
+    gen = newGeneration();
     co.sys.deleteTimer(timer);
   }
 
@@ -344,7 +349,10 @@ Error PdoService::requestTxPdo(uint16_t cobid)
 Error PdoService::sendAllTpdos()
 {
   uint32_t cfgCobid;
-  for (uint16_t tpdoParamIdx = 0x1800; co.od.get(tpdoParamIdx, 1, cfgCobid) == canfetti::Error::Success; tpdoParamIdx++) {
+  for (auto pdoNum : configuredTPDONums) {
+    uint16_t tpdoParamIdx = 0x1800 + pdoNum;
+    if (co.od.get(tpdoParamIdx, 1, cfgCobid) != canfetti::Error::Success) continue;
+
     if (isDisabled(cfgCobid)) {
       continue;
     }
@@ -365,10 +373,11 @@ Error PdoService::processMsg(const canfetti::Msg &msg)
   if (co.getState() != canfetti::State::Operational) return canfetti::Error::Success;
 
   if (msg.rtr) {
-    for (uint16_t tpdoParamIdx = 0x1800; co.od.get(tpdoParamIdx, 1, cfgCobid) == canfetti::Error::Success; tpdoParamIdx++) {
-      if (canIdMask(cfgCobid) != msg.id) {
-        continue;
-      }
+    for (auto pdoNum : configuredTPDONums) {
+      uint16_t tpdoParamIdx = 0x1800 + pdoNum;
+
+      if (co.od.get(tpdoParamIdx, 1, cfgCobid) != canfetti::Error::Success) continue;
+      if (canIdMask(cfgCobid) != msg.id) continue;
 
       if (isDisabled(cfgCobid)) {
         LogInfo("Ignoring RTR on TPDO %x because it is disabled", canIdMask(cfgCobid));
@@ -454,8 +463,8 @@ Error PdoService::processMsg(const canfetti::Msg &msg)
       // Reset timer if active
       if (auto r = rpdoTimers.find(busCobid); r != rpdoTimers.end()) {
         auto &[timer, gen, periodMs, cb] = r->second;
-        (void)cb; // Silence unused variable warning
-        gen                              = newGeneration();
+        (void)cb;  // Silence unused variable warning
+        gen = newGeneration();
         if (timer != System::InvalidTimer) {
           co.sys.deleteTimer(timer);
           timer = co.sys.scheduleDelayed(periodMs, std::bind(&PdoService::rpdoTimeout, this, gen, busCobid));

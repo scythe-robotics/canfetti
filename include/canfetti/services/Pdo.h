@@ -24,6 +24,7 @@ class PdoService : public Service {
 
  private:
   bool pdoEnabled = false;
+  std::vector<uint16_t> configuredTPDONums;
   std::unordered_map<uint16_t, System::TimerHdl> tpdoTimers;
   std::unordered_map<uint16_t, std::tuple<System::TimerHdl, unsigned /* generation */, uint16_t /* periodMs */, TimeoutCb>> rpdoTimers;
   void enableTpdoEvent(uint16_t idx);
