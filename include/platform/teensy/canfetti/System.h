@@ -1,11 +1,11 @@
 #pragma once
 
 #include <stdarg.h>
-#include <array>
 #include <cassert>
 #include <functional>
 #include <list>
 #include <string>
+#include <vector>
 #include "Arduino.h"
 
 //******************************************************************************
@@ -39,11 +39,11 @@ class System {
     bool enable    = false;
     bool available = true;
   };
-  std::array<TimerData, 24> timers;
+  std::vector<TimerData> timers;
 
  public:
-  using TimerHdl                         = TimerData*;
-  static constexpr TimerHdl InvalidTimer = nullptr;
+  using TimerHdl                         = size_t;
+  static constexpr TimerHdl InvalidTimer = SIZE_MAX;
 
   void deleteTimer(TimerHdl& hdl);
   TimerHdl scheduleDelayed(uint32_t delayMs, std::function<void()> cb);

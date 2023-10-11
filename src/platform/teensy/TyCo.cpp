@@ -36,10 +36,11 @@ void System::service()
 
 void System::deleteTimer(System::TimerHdl &hdl)
 {
-  if (hdl) {
-    hdl->enable    = false;
-    hdl->available = true;
-    hdl            = System::InvalidTimer;
+  if (hdl != System::InvalidTimer) {
+    assert(hdl < timers.size());
+    timers[hdl].enable    = false;
+    timers[hdl].available = true;
+    hdl                   = System::InvalidTimer;
   }
 }
 
@@ -54,33 +55,49 @@ System::TimerHdl System::scheduleDelayed(uint32_t delayMs, std::function<void()>
       td.available    = false;
       td.period       = 0;
       td.cb           = cb;
-      return &td;
+      return i;
     }
   }
 
-  LogInfo("Ran out of timers. Fixme");
-  return System::InvalidTimer;
+  timers.push_back({
+      .lastFireTime = millis(),
+      .delay        = delayMs,
+      .period       = 0,
+      .cb           = cb,
+      .enable       = true,
+      .available    = false,
+  });
+
+  return timers.size() - 1;
 }
 
 System::TimerHdl System::schedulePeriodic(uint32_t periodMs, std::function<void()> cb, bool staggeredStart)
 {
+  uint32_t staggeredDelay = staggeredStart ? random(periodMs << 1) : 0;
+
   for (size_t i = 0; i < timers.size(); i++) {
     TimerData &td = timers[i];
     if (td.available) {
-      uint32_t staggeredDelay = staggeredStart ? random(periodMs << 1) : 0;
-
       td.lastFireTime = millis();
       td.delay        = periodMs + staggeredDelay;
       td.enable       = true;
       td.available    = false;
       td.period       = periodMs;
       td.cb           = cb;
-      return &td;
+      return i;
     }
   }
 
-  LogInfo("Ran out of timers. Fixme");
-  return System::InvalidTimer;
+  timers.push_back({
+      .lastFireTime = millis(),
+      .delay        = periodMs + staggeredDelay,
+      .period       = periodMs,
+      .cb           = cb,
+      .enable       = true,
+      .available    = false,
+  });
+
+  return timers.size() - 1;
 }
 
 //******************************************************************************
