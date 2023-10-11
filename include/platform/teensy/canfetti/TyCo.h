@@ -23,7 +23,7 @@ class TyCoDev : public canfetti::CanDevice {
 class TyCo : public canfetti::LocalNode {
  public:
   TyCo(TyCoDev &d, uint8_t nodeId, const char *deviceName, uint32_t deviceType = 0);
-  void service();
+  void service(size_t maxRxBatch = 1);
 
   template <typename T>
   Error blockingRead(uint8_t node, uint16_t idx, uint8_t subIdx, T &data, uint32_t segmentTimeout = SdoService::DefaultSegmentXferTimeoutMs)

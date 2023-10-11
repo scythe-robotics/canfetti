@@ -193,11 +193,11 @@ TyCo::TyCo(TyCoDev &d, uint8_t nodeId, const char *deviceName, uint32_t deviceTy
 {
 }
 
-void TyCo::service()
+void TyCo::service(size_t maxRxBatch)
 {
   CAN_message_t m;
 
-  if (dev.read(m)) {
+  while (dev.read(m)) {
     Msg msg = {
         .id   = m.id,
         .rtr  = !!m.flags.remote,
@@ -212,6 +212,7 @@ void TyCo::service()
     dev.stats.droppedRx += dev.newDroppedRx();
 
     processFrame(msg);
+    if (--maxRxBatch == 0) break;
   }
 
   sys.service();
