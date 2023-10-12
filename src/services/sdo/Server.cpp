@@ -172,7 +172,7 @@ bool Server::segmentRead()
   toggle     = !toggle;
 
   if (Error err = proxy.copyInto(&payload[1], toSend); err != Error::Success) {
-    abort(err, txCobid, proxy.idx, proxy.subIdx, co.bus);
+    finish(err, true);
     return true;
   }
 
