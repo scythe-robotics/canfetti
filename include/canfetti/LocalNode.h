@@ -17,6 +17,7 @@ class LocalNode : public Node {
   using Node::od;
 
   Error init();
+  inline void setSDOServerTimeout(uint32_t timeoutMs) { sdo.setServerSegmentTimeout(timeoutMs); }
   inline size_t getActiveTransactionCount() { return sdo.getActiveTransactionCount(); }
   inline Error addSDOServer(uint16_t rxCobid, uint16_t txCobid, uint8_t clientId) { return sdo.addSDOServer(rxCobid, txCobid, clientId); }
   inline Error addSDOClient(uint32_t txCobid, uint16_t rxCobid, uint8_t serverId) { return sdo.addSDOClient(txCobid, rxCobid, serverId); }

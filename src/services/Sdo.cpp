@@ -13,6 +13,8 @@ Error SdoService::init()
     return e;
   }
 
+  serverSegmentTimeoutMs = DefaultSegmentXferTimeoutMs;
+
   // Mandatory default SDO server
   return addSDOServer(0x600 + co.nodeId, 0x580 + co.nodeId, 0);
 }
@@ -106,7 +108,7 @@ Error SdoService::clientTransaction(bool read, uint8_t remoteNode, uint16_t idx,
           .cb         = cb,
       };
       auto [i, success] = activeTransactions.emplace(serverToClient, state);
-      (void)i; // Silence unused variable warning
+      (void)i;  // Silence unused variable warning
       if (!success) err = Error::Error;
     }
 
@@ -161,24 +163,24 @@ Error SdoService::processMsg(const Msg &msg)
     else {
       c->second.generation = newGeneration();
       co.sys.deleteTimer(c->second.timer);
-      c->second.timer = co.sys.scheduleDelayed(DefaultSegmentXferTimeoutMs, std::bind(&SdoService::transactionTimeout, this, c->second.generation, msg.id));
+      c->second.timer = co.sys.scheduleDelayed(serverSegmentTimeoutMs, std::bind(&SdoService::transactionTimeout, this, c->second.generation, msg.id));
     }
   }
   else if (auto &&s = servers.find(msg.id); s != servers.end()) {
     auto [tx, node] = s->second;
-    (void)node; // Silence unused variable warning
-    auto server     = Server::processInitiate(msg, tx, co);
+    (void)node;  // Silence unused variable warning
+    auto server = Server::processInitiate(msg, tx, co);
 
     if (server) {
       unsigned gen           = newGeneration();
       TransactionState state = {
           .protocol   = server,
-          .timer      = co.sys.scheduleDelayed(DefaultSegmentXferTimeoutMs, std::bind(&SdoService::transactionTimeout, this, gen, msg.id)),
+          .timer      = co.sys.scheduleDelayed(serverSegmentTimeoutMs, std::bind(&SdoService::transactionTimeout, this, gen, msg.id)),
           .generation = gen,
           .cb         = nullptr,
       };
       auto [i, success] = activeTransactions.emplace(msg.id, state);
-      (void)i; // Silence unused variable warning
+      (void)i;  // Silence unused variable warning
       if (!success) {
         return Error::Error;
       }

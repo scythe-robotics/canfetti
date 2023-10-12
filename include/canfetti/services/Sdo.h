@@ -20,6 +20,7 @@ class SdoService : public Service {
   Error addSDOServer(uint16_t rxCobid, uint16_t txCobid, uint8_t clientId);
   Error addSDOClient(uint32_t txCobid, uint16_t rxCobid, uint8_t serverId);
   size_t getActiveTransactionCount();
+  inline void setServerSegmentTimeout(uint32_t timeoutMs) { serverSegmentTimeoutMs = timeoutMs; }
 
  private:
   struct TransactionState {
@@ -35,6 +36,7 @@ class SdoService : public Service {
   Error syncServices();
   std::unordered_map<uint16_t, TransactionState> activeTransactions;
   std::unordered_map<uint16_t, std::tuple<uint16_t, uint8_t>> servers;
+  uint32_t serverSegmentTimeoutMs;
 };
 
 }  // namespace canfetti
