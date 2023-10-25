@@ -39,7 +39,7 @@ void Protocol::abort(canfetti::Error status, uint16_t txCobid, uint16_t idx, uin
 void Protocol::finish(Error status, bool sendAbort)
 {
   if (sendAbort && status != Error::Success) {
-    LogInfo("Sending abort (%x) at %x", (unsigned)status, txCobid);
+    LogInfo("Sending abort (%x) at %x: %x[%d]", (unsigned)status, txCobid, proxy.idx, proxy.subIdx);
     abort(status, txCobid, proxy.idx, proxy.subIdx, co.bus);
   }
   finished       = true;
