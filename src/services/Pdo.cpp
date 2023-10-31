@@ -329,7 +329,7 @@ canfetti::Error PdoService::disablePdoEvents()
   }
   tpdoTimers.clear();
 
-  for (auto r : rpdoTimers) {
+  for (auto &r : rpdoTimers) {
     auto &[timer, gen, periodMs, cb] = r.second;
     (void)periodMs;  // Silence unused variable warning
     (void)cb;
