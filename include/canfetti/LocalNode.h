@@ -95,6 +95,26 @@ class LocalNode : public Node {
   }
 
   template <typename T>
+  inline Error readData(uint8_t node, uint16_t idx, uint8_t subIdx, T &&data, std::function<void(Error e)> cb, uint32_t segmentTimeout = SdoService::DefaultSegmentXferTimeoutMs)
+  {
+    OdVariant *v = new OdVariant(data);
+
+    if (!v) {
+      return Error::OutOfMemory;
+    }
+
+    Error err = sdo.clientTransaction(true, node, idx, subIdx, *v, segmentTimeout, [=](Error e) {
+      if (cb) cb(e);
+      delete v;
+    });
+
+    if (err != Error::Success) {
+      delete v;
+    }
+    return err;
+  }
+
+  template <typename T>
   Error write(uint8_t node, uint16_t idx, uint8_t subIdx, T &&data, std::function<void(Error e)> cb, uint32_t segmentTimeout = SdoService::DefaultSegmentXferTimeoutMs)
   {
     OdVariant *v = new OdVariant(data);
