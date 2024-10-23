@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.31)
+cmake_policy(SET CMP0148 OLD)
 project(canfetti)
 
 # -std=gnu++17
@@ -6,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_EXTENSIONS YES)
 
-find_package(catkin)
+find_package(catkin QUIET)
 if(catkin_FOUND)
   catkin_package(
     INCLUDE_DIRS include
@@ -37,6 +38,14 @@ target_compile_options(canfetti PRIVATE -g -Og -Wall -Werror)
 target_link_libraries(canfetti PUBLIC pthread)
 
 if(NOT catkin_FOUND)
+
+  include(FetchContent)
+  FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/main.zip
+  )
+  FetchContent_MakeAvailable(googletest)
+
   add_executable(canfetti_unittest
     ${CORE_SRC}
     src/platform/unittest/test.cpp
