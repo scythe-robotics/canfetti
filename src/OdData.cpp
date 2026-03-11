@@ -110,7 +110,7 @@ OdProxy::~OdProxy()
     e->unlock();
     if (changed) {
       e->bumpGeneration();
-      if (!callbacksSuppressed) {
+      if (remaining() == 0 && !callbacksSuppressed) {
         e->fireCallbacks();
       }
     }
