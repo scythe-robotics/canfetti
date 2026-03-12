@@ -91,6 +91,7 @@ std::shared_ptr<Server> Server::processInitiate(const Msg &msg, uint16_t txCobid
           abort(err, txCobid, idx, subIdx, co.bus);
         }
         else {
+          proxy.senderIsFinished();
           sendDownloadInitRsp(txCobid, idx, subIdx, proxy, co.bus);
         }
       }
@@ -227,6 +228,7 @@ bool Server::processMsg(const canfetti::Msg &msg)
     segmentWrite();
 
     if (complete) {
+      proxy.senderIsFinished();
       finish(canfetti::Error::Success);
     }
 

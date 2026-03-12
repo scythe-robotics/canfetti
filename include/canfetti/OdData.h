@@ -93,6 +93,7 @@ class OdProxy {
   Error reset();
   size_t remaining();
   void suppressCallbacks();
+  void senderIsFinished() { sender_is_finished = true; }
 
   const uint16_t idx;
   const uint8_t subIdx;
@@ -100,6 +101,7 @@ class OdProxy {
  private:
   bool readOnly            = false;
   bool changed             = false;
+  bool sender_is_finished  = false;
   bool callbacksSuppressed = false;
   OdVariant *v             = nullptr;
   const OdVariant *roV     = nullptr;
