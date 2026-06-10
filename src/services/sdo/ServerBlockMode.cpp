@@ -109,6 +109,7 @@ bool ServerBlockMode::processMsg(const canfetti::Msg &msg)
       }
 
       if (!finished) {
+        proxy.senderIsFinished();
         uint8_t payload[8] = {static_cast<uint8_t>((5 << 5) | 1)};
         co.bus.write(txCobid, payload);
         finish(Error::Success);
