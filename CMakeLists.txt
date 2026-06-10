@@ -70,6 +70,11 @@ if(NOT catkin_FOUND)
     src/platform/linux/test/generation.cpp
     )
   target_link_libraries(canfetti_generationtest PRIVATE canfetti)
+
+  add_executable(canfetti_blockmode_edge
+    src/platform/linux/test/blockmode_edge.cpp
+    )
+  target_link_libraries(canfetti_blockmode_edge PRIVATE canfetti)
 endif()
 
 if(catkin_FOUND)
