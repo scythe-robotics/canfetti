@@ -8,6 +8,17 @@ Currently supported platforms:
 - [Teensy](https://www.pjrc.com/teensy/)
 - [ODrive](https://odriverobotics.com/)
 
+
+## Linux build
+```
+sudo apt install build-essential cmake libgtest-dev libgmock-dev catkin-tools
+mkdir build
+cmake -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+./run-tests.sh
+```
+
+
 ## Examples
 
 ### Teensy Example
